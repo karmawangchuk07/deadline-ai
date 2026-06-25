@@ -54,11 +54,15 @@ export default function AddContract({ onClose, onAdded }: {
     }
   }
 
+  const steps = ["what", "blocker", "sacrifice"];
+  const stepIndex = steps.indexOf(step);
+
   return (
     <div style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(0,0,0,0.8)",
+      background: "rgba(0,0,0,0.85)",
+      backdropFilter: "blur(4px)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -67,19 +71,52 @@ export default function AddContract({ onClose, onAdded }: {
     }}>
       <div style={{
         background: "var(--surface)",
-        border: "0.5px solid var(--border)",
-        borderRadius: "12px",
+        border: "0.5px solid var(--border-bright)",
+        borderRadius: "16px",
         padding: "2rem",
         width: "100%",
-        maxWidth: "480px"
+        maxWidth: "500px",
+        boxShadow: "0 0 0 1px rgba(88,166,255,0.05), 0 24px 48px rgba(0,0,0,0.4)"
       }}>
+
+        {step !== "done" && (
+          <div style={{ marginBottom: "2rem" }}>
+            <div style={{ display: "flex", gap: "6px", marginBottom: "1.5rem" }}>
+              {steps.map((s, i) => (
+                <div key={s} style={{
+                  height: "2px",
+                  flex: 1,
+                  borderRadius: "2px",
+                  background: i <= stepIndex
+                    ? "var(--accent)"
+                    : "var(--surface-3)",
+                  transition: "background 0.3s"
+                }} />
+              ))}
+            </div>
+            <p style={{
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              marginBottom: "0.75rem"
+            }}>
+              {step === "what" && "Step 1 of 3 — The commitment"}
+              {step === "blocker" && "Step 2 of 3 — The truth"}
+              {step === "sacrifice" && "Step 3 of 3 — The stakes"}
+            </p>
+          </div>
+        )}
 
         {step === "what" && (
           <div>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "1.5rem" }}>
-              Step 1 of 3 — The commitment
-            </p>
-            <h2 style={{ fontSize: "20px", fontWeight: "500", color: "var(--text-primary)", marginBottom: "1.5rem" }}>
+            <h2 style={{
+              fontSize: "22px",
+              fontWeight: "600",
+              color: "var(--text-primary)",
+              letterSpacing: "-0.02em",
+              marginBottom: "1.5rem"
+            }}>
               What needs to get done?
             </h2>
 
@@ -92,9 +129,7 @@ export default function AddContract({ onClose, onAdded }: {
               style={inputStyle}
             />
 
-            <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "1.25rem", marginBottom: "0.5rem" }}>
-              When is it due?
-            </p>
+            <p style={labelStyle}>When is it due?</p>
             <input
               type="datetime-local"
               value={deadline}
@@ -102,9 +137,7 @@ export default function AddContract({ onClose, onAdded }: {
               style={inputStyle}
             />
 
-            <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "1.25rem", marginBottom: "0.5rem" }}>
-              Priority
-            </p>
+            <p style={labelStyle}>Priority</p>
             <div style={{ display: "flex", gap: "8px" }}>
               {(["high", "medium", "low"] as const).map(p => (
                 <button
@@ -112,17 +145,31 @@ export default function AddContract({ onClose, onAdded }: {
                   onClick={() => setPriority(p)}
                   style={{
                     flex: 1,
-                    padding: "0.5rem",
-                    borderRadius: "6px",
-                    border: `0.5px solid ${priority === p ? "var(--text-primary)" : "var(--border)"}`,
-                    background: priority === p ? "var(--text-primary)" : "transparent",
-                    color: priority === p ? "var(--bg)" : "var(--text-secondary)",
-                    fontSize: "13px",
+                    padding: "0.6rem",
+                    borderRadius: "8px",
+                    border: `0.5px solid ${priority === p
+                      ? p === "high" ? "var(--danger)"
+                        : p === "medium" ? "var(--warning)"
+                        : "var(--success)"
+                      : "var(--border)"}`,
+                    background: priority === p
+                      ? p === "high" ? "var(--danger-dim)"
+                        : p === "medium" ? "var(--warning-dim)"
+                        : "var(--success-dim)"
+                      : "transparent",
+                    color: priority === p
+                      ? p === "high" ? "var(--danger)"
+                        : p === "medium" ? "var(--warning)"
+                        : "var(--success)"
+                      : "var(--text-muted)",
+                    fontSize: "12px",
+                    fontWeight: "500",
                     cursor: "pointer",
-                    transition: "all 0.15s"
+                    transition: "all 0.15s",
+                    letterSpacing: "0.03em"
                   }}
                 >
-                  {p}
+                  {p === "high" ? "🔴 high" : p === "medium" ? "🟡 medium" : "🟢 low"}
                 </button>
               ))}
             </div>
@@ -132,7 +179,7 @@ export default function AddContract({ onClose, onAdded }: {
               <button
                 onClick={() => setStep("blocker")}
                 disabled={!title.trim() || !deadline}
-                style={nextButtonStyle(!title.trim() || !deadline)}
+                style={primaryButton(!title.trim() || !deadline)}
               >
                 Next →
               </button>
@@ -142,23 +189,26 @@ export default function AddContract({ onClose, onAdded }: {
 
         {step === "blocker" && (
           <div>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "1.5rem" }}>
-              Step 2 of 3 — The truth
-            </p>
-            <h2 style={{ fontSize: "20px", fontWeight: "500", color: "var(--text-primary)", marginBottom: "0.5rem" }}>
-              Why haven't you started yet?
+            <h2 style={{
+              fontSize: "22px",
+              fontWeight: "600",
+              color: "var(--text-primary)",
+              letterSpacing: "-0.02em",
+              marginBottom: "0.5rem"
+            }}>
+              Why haven't you started?
             </h2>
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-              Don't say "busy". What's actually stopping you?
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "1.5rem", lineHeight: "1.5" }}>
+              Don't say "busy". What's <em>actually</em> stopping you?
             </p>
 
             <textarea
-              placeholder="Be specific. 'I don't know where to start' is an answer. 'Busy' is not."
+              placeholder={'Be specific. "I don\'t know where to start" is an answer. "Busy" is not.'}
               value={blocker}
               onChange={e => setBlocker(e.target.value)}
               rows={4}
               autoFocus
-              style={{ ...inputStyle, resize: "none" }}
+              style={{ ...inputStyle, resize: "none", lineHeight: "1.6" }}
             />
 
             <div style={footerStyle}>
@@ -166,7 +216,7 @@ export default function AddContract({ onClose, onAdded }: {
               <button
                 onClick={() => setStep("sacrifice")}
                 disabled={!blocker.trim()}
-                style={nextButtonStyle(!blocker.trim())}
+                style={primaryButton(!blocker.trim())}
               >
                 Next →
               </button>
@@ -176,23 +226,26 @@ export default function AddContract({ onClose, onAdded }: {
 
         {step === "sacrifice" && (
           <div>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "1.5rem" }}>
-              Step 3 of 3 — The stakes
-            </p>
-            <h2 style={{ fontSize: "20px", fontWeight: "500", color: "var(--text-primary)", marginBottom: "0.5rem" }}>
-              What will you sacrifice if you don't do this?
+            <h2 style={{
+              fontSize: "22px",
+              fontWeight: "600",
+              color: "var(--text-primary)",
+              letterSpacing: "-0.02em",
+              marginBottom: "0.5rem"
+            }}>
+              What are the stakes?
             </h2>
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-              Make it real. Something you'd actually miss.
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "1.5rem", lineHeight: "1.5" }}>
+              What will you sacrifice if you don't do this? Make it real.
             </p>
 
             <textarea
-              placeholder="e.g. I'll skip my weekend plans / I'll delete my Netflix account for a week"
+              placeholder="e.g. I'll skip my weekend plans / I'll delete Netflix for a week"
               value={sacrifice}
               onChange={e => setSacrifice(e.target.value)}
               rows={4}
               autoFocus
-              style={{ ...inputStyle, resize: "none" }}
+              style={{ ...inputStyle, resize: "none", lineHeight: "1.6" }}
             />
 
             <div style={footerStyle}>
@@ -200,7 +253,11 @@ export default function AddContract({ onClose, onAdded }: {
               <button
                 onClick={handleSubmit}
                 disabled={!sacrifice.trim() || loading}
-                style={nextButtonStyle(!sacrifice.trim() || loading)}
+                style={{
+                  ...primaryButton(!sacrifice.trim() || loading),
+                  background: !sacrifice.trim() || loading ? "var(--surface-3)" : "var(--accent)",
+                  color: !sacrifice.trim() || loading ? "var(--text-muted)" : "#0D1117",
+                }}
               >
                 {loading ? "interrogating your excuses..." : "Sign the contract →"}
               </button>
@@ -209,35 +266,65 @@ export default function AddContract({ onClose, onAdded }: {
         )}
 
         {step === "done" && (
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "1.5rem" }}>
-              Contract signed
-            </p>
-            <h2 style={{ fontSize: "20px", fontWeight: "500", color: "var(--text-primary)", marginBottom: "1.5rem" }}>
-              AXIS has something to say.
-            </h2>
+          <div>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              marginBottom: "1.5rem"
+            }}>
+              <div style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "var(--accent-dim)",
+                border: "0.5px solid var(--accent)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px"
+              }}>
+                ⚡
+              </div>
+              <div>
+                <p style={{ fontSize: "11px", color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                  Contract signed
+                </p>
+                <p style={{ fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
+                  AXIS has something to say.
+                </p>
+              </div>
+            </div>
+
             <div style={{
               background: "var(--surface-2)",
-              border: "0.5px solid var(--border)",
+              border: "0.5px solid var(--border-bright)",
+              borderLeft: "3px solid var(--accent)",
               borderRadius: "8px",
               padding: "1.25rem",
-              marginBottom: "1.5rem",
-              textAlign: "left"
+              marginBottom: "1.5rem"
             }}>
-              <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: "1.7" }}>
-                {aiNote || "Contract saved. AXIS is watching."}
+              <p style={{
+                fontSize: "14px",
+                color: "var(--text-secondary)",
+                lineHeight: "1.8",
+                fontStyle: "italic"
+              }}>
+                "{aiNote || "Contract saved. AXIS is watching."}"
               </p>
             </div>
+
             <button onClick={onClose} style={{
               width: "100%",
               padding: "0.875rem",
-              background: "var(--text-primary)",
-              color: "var(--bg)",
+              background: "var(--accent)",
+              color: "#0D1117",
               border: "none",
               borderRadius: "8px",
               fontSize: "14px",
-              fontWeight: "500",
-              cursor: "pointer"
+              fontWeight: "600",
+              cursor: "pointer",
+              letterSpacing: "0.01em"
             }}>
               Got it
             </button>
@@ -251,13 +338,20 @@ export default function AddContract({ onClose, onAdded }: {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "var(--surface-2)",
-  border: "0.5px solid var(--border)",
+  border: "0.5px solid var(--border-bright)",
   borderRadius: "8px",
   padding: "0.875rem 1rem",
   fontSize: "14px",
   color: "var(--text-primary)",
   outline: "none",
   fontFamily: "inherit",
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: "13px",
+  color: "var(--text-secondary)",
+  marginTop: "1.25rem",
+  marginBottom: "0.5rem"
 };
 
 const footerStyle: React.CSSProperties = {
@@ -271,19 +365,19 @@ const cancelStyle: React.CSSProperties = {
   background: "none",
   border: "none",
   color: "var(--text-muted)",
-  fontSize: "14px",
+  fontSize: "13px",
   cursor: "pointer",
   padding: "0.5rem"
 };
 
-function nextButtonStyle(disabled: boolean): React.CSSProperties {
+function primaryButton(disabled: boolean): React.CSSProperties {
   return {
     padding: "0.75rem 1.5rem",
-    background: disabled ? "var(--surface-2)" : "var(--text-primary)",
-    color: disabled ? "var(--text-muted)" : "var(--bg)",
-    border: "none",
+    background: disabled ? "var(--surface-3)" : "var(--surface-2)",
+    color: disabled ? "var(--text-muted)" : "var(--text-primary)",
+    border: `0.5px solid ${disabled ? "var(--border)" : "var(--border-bright)"}`,
     borderRadius: "8px",
-    fontSize: "14px",
+    fontSize: "13px",
     fontWeight: "500",
     cursor: disabled ? "not-allowed" : "pointer",
     transition: "all 0.2s"
