@@ -7,6 +7,7 @@ import { getScoreLabel, getScoreColor, onContractCompleted, onContractReschedule
 import Onboarding from "@/components/ui/onboarding";
 import AddContract from "@/components/ui/AddContract";
 import Dashboard from "@/components/ui/Dashboard";
+import EmergencyRoom from "@/components/ui/EmergencyRoom";
 import {
   FileText,
   LayoutDashboard,
@@ -306,14 +307,7 @@ function DashboardScreen() {
 
     {activeTab === "Dashboard" && <Dashboard />}
 
-    {activeTab === "Emergency Room" && (
-      <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "4px" }}>
-          Emergency Room
-        </h1>
-        <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>Coming soon.</p>
-      </div>
-    )}
+    {activeTab === "Emergency Room" && <EmergencyRoom />}
 
     {activeTab === "Weekly Letter" && (
       <div>
