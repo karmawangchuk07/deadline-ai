@@ -1,65 +1,234 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { getProfile, getContracts } from "@/lib/storage";
+import { Contract, ProcrastinationProfile } from "@/lib/type";
+import Onboarding from "@/components/ui/onboarding";
+import AddContract from "@/components/ui/AddContract";
 
 export default function Home() {
+  const [profile, setProfile] = useState<ProcrastinationProfile | null>(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const existing = getProfile();
+    setProfile(existing);
+    setChecking(false);
+  }, []);
+
+  if (checking) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--text-secondary)",
+        fontSize: "14px",
+        letterSpacing: "0.05em"
+      }}>
+        loading...
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return <Onboarding onComplete={(p) => setProfile(p)} />;
+  }
+
+  return <DashboardScreen />;
+}
+
+function DashboardScreen() {
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [showAdd, setShowAdd] = useState(false);
+  const [activeTab, setActiveTab] = useState("Contracts");
+
+  useEffect(() => {
+    setContracts(getContracts());
+  }, []);
+
+function handleAdded(contract: Contract) {
+  setContracts(getContracts());
+  setShowAdd(false);
+}
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div style={{ minHeight: "100vh", display: "flex" }}>
+      <aside style={{
+        width: "220px",
+        borderRight: "0.5px solid var(--border)",
+        padding: "2rem 1.25rem",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.25rem",
+        flexShrink: 0
+      }}>
+        <div style={{
+          fontSize: "16px",
+          fontWeight: "500",
+          letterSpacing: "-0.01em",
+          marginBottom: "2rem",
+          color: "var(--text-primary)"
+        }}>
+          AXIS
+        </div>
+        {["Contracts", "Dashboard", "Emergency Room", "Weekly Letter"].map(item => (
+          <div
+            key={item}
+            onClick={() => setActiveTab(item)}
+            style={{
+              padding: "0.5rem 0.75rem",
+              borderRadius: "6px",
+              fontSize: "14px",
+              color: activeTab === item ? "var(--text-primary)" : "var(--text-secondary)",
+              background: activeTab === item ? "var(--surface)" : "transparent",
+              cursor: "pointer",
+              transition: "all 0.15s"
+            }}
+          >
+            {item}
+          </div>
+        ))}
+      </aside>
+
+      <main style={{ flex: 1, padding: "2rem", overflowY: "auto" }}>
+        {activeTab === "Contracts" && (
+          <div>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "2rem"
+            }}>
+              <div>
+                <h2 style={{
+                  fontSize: "22px",
+                  fontWeight: "500",
+                  color: "var(--text-primary)"
+                }}>
+                  Your contracts
+                </h2>
+                <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>
+                  {contracts.length === 0
+                    ? "Nothing here yet. Either you're on top of everything or you haven't been honest."
+                    : `${contracts.filter(c => c.status === "pending").length} pending`}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAdd(true)}
+                style={{
+                  padding: "0.625rem 1.25rem",
+                  background: "var(--text-primary)",
+                  color: "var(--bg)",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: "500",
+                  cursor: "pointer"
+                }}
+              >
+                + Add contract
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {contracts.map(contract => (
+                <ContractCard key={contract.id} contract={contract} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "Dashboard" && (
+          <div>
+            <h2 style={{ fontSize: "22px", fontWeight: "500", color: "var(--text-primary)" }}>Dashboard</h2>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>Coming soon.</p>
+          </div>
+        )}
+
+        {activeTab === "Emergency Room" && (
+          <div>
+            <h2 style={{ fontSize: "22px", fontWeight: "500", color: "var(--text-primary)" }}>Emergency Room</h2>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>Coming soon.</p>
+          </div>
+        )}
+
+        {activeTab === "Weekly Letter" && (
+          <div>
+            <h2 style={{ fontSize: "22px", fontWeight: "500", color: "var(--text-primary)" }}>Weekly Letter</h2>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>Coming soon.</p>
+          </div>
+        )}
+      </main>
+
+      {showAdd && (
+        <AddContract
+          onClose={() => setShowAdd(false)}
+          onAdded={handleAdded}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+      )}
+    </div>
+  );
+}
+
+function ContractCard({ contract }: { contract: Contract }) {
+  const deadline = new Date(contract.deadline);
+  const now = new Date();
+  const hoursLeft = Math.round((deadline.getTime() - now.getTime()) / (1000 * 60 * 60));
+  const isOverdue = hoursLeft < 0;
+  const isUrgent = hoursLeft >= 0 && hoursLeft <= 24;
+
+  return (
+    <div style={{
+      background: "var(--surface)",
+      border: `0.5px solid ${isOverdue ? "var(--danger)" : "var(--border)"}`,
+      borderRadius: "10px",
+      padding: "1.25rem",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ flex: 1 }}>
+          <p style={{
+            fontSize: "15px",
+            fontWeight: "500",
+            color: "var(--text-primary)",
+            marginBottom: "4px"
+          }}>
+            {contract.title}
+          </p>
+          <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+            {isOverdue
+              ? `Overdue by ${Math.abs(hoursLeft)}h`
+              : isUrgent
+              ? `⚠ ${hoursLeft}h left`
+              : `Due ${deadline.toLocaleDateString()}`}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <span style={{
+          fontSize: "11px",
+          padding: "3px 10px",
+          borderRadius: "20px",
+          background: contract.priority === "high" ? "#3A1A1A" : contract.priority === "medium" ? "#2A2A1A" : "var(--surface-2)",
+          color: contract.priority === "high" ? "var(--danger)" : contract.priority === "medium" ? "var(--warning)" : "var(--text-muted)",
+          border: "0.5px solid var(--border)"
+        }}>
+          {contract.priority}
+        </span>
+      </div>
+
+      {contract.aiNote && (
+        <p style={{
+          fontSize: "13px",
+          color: "var(--text-secondary)",
+          marginTop: "0.75rem",
+          paddingTop: "0.75rem",
+          borderTop: "0.5px solid var(--border)",
+          lineHeight: "1.6",
+          fontStyle: "italic"
+        }}>
+          "{contract.aiNote}"
+        </p>
+      )}
     </div>
   );
 }
