@@ -8,13 +8,9 @@ import Onboarding from "@/components/ui/onboarding";
 import AddContract from "@/components/ui/AddContract";
 import Dashboard from "@/components/ui/Dashboard";
 import EmergencyRoom from "@/components/ui/EmergencyRoom";
-import {
-  FileText,
-  LayoutDashboard,
-  Siren,
-  Mail,
-  TrendingUp,
-} from "lucide-react";
+import WeeklyLetter from "@/components/ui/WeeklyLetter";
+import InterrogationMode from "@/components/ui/InterrogationMode";
+import { FileText, LayoutDashboard, Siren, Mail, TrendingUp } from "lucide-react";
 
 export default function Home() {
   const [profile, setProfile] = useState<ProcrastinationProfile | null>(null);
@@ -87,7 +83,6 @@ function DashboardScreen() {
       <aside style={{
         width: "260px",
         borderRight: "0.5px solid var(--border)",
-        padding: "0",
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
@@ -160,12 +155,7 @@ function DashboardScreen() {
               </div>
             </div>
             <div>
-              <div style={{
-                fontSize: "14px",
-                fontWeight: "600",
-                color: scoreColor,
-                marginBottom: "2px"
-              }}>
+              <div style={{ fontSize: "14px", fontWeight: "600", color: scoreColor, marginBottom: "2px" }}>
                 {scoreLabel}
               </div>
               <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
@@ -239,87 +229,75 @@ function DashboardScreen() {
       </aside>
 
       <main style={{
-  flex: 1,
-  padding: "2.5rem 3rem",
-  overflowY: "auto",
-  display: "flex",
-  justifyContent: "center"
-}}>
-  <div style={{ width: "100%", maxWidth: "800px" }}>
+        flex: 1,
+        padding: "2.5rem 3rem",
+        overflowY: "auto",
+        display: "flex",
+        justifyContent: "center"
+      }}>
+        <div style={{ width: "100%", maxWidth: "800px" }}>
 
-    {activeTab === "Contracts" && (
-      <div>
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "2rem"
-        }}>
-          <div>
-            <h1 style={{
-              fontSize: "26px",
-              fontWeight: "700",
-              color: "var(--text-primary)",
-              letterSpacing: "-0.02em",
-              marginBottom: "4px"
-            }}>
-              Your contracts
-            </h1>
-            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-              {contracts.length === 0
-                ? "Nothing here. Either you're on top of everything or you haven't been honest."
-                : `${pending} pending · ${contracts.filter(c => c.status === "completed").length} completed`}
-            </p>
-          </div>
-          <button
-            onClick={() => setShowAdd(true)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "0.625rem 1.25rem",
-              background: "var(--accent)",
-              color: "#060608",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "13px",
-              fontWeight: "600",
-              cursor: "pointer",
-              letterSpacing: "0.01em",
-              flexShrink: 0
-            }}
-          >
-            + Add contract
-          </button>
+          {activeTab === "Contracts" && (
+            <div>
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "2rem"
+              }}>
+                <div>
+                  <h1 style={{
+                    fontSize: "26px",
+                    fontWeight: "700",
+                    color: "var(--text-primary)",
+                    letterSpacing: "-0.02em",
+                    marginBottom: "4px"
+                  }}>
+                    Your contracts
+                  </h1>
+                  <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+                    {contracts.length === 0
+                      ? "Nothing here. Either you're on top of everything or you haven't been honest."
+                      : `${pending} pending · ${contracts.filter(c => c.status === "completed").length} completed`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAdd(true)}
+                  style={{
+                    padding: "0.625rem 1.25rem",
+                    background: "var(--accent)",
+                    color: "#060608",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    flexShrink: 0
+                  }}
+                >
+                  + Add contract
+                </button>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {contracts.map(contract => (
+                  <ContractCard
+                    key={contract.id}
+                    contract={contract}
+                    onUpdate={refresh}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "Dashboard" && <Dashboard />}
+          {activeTab === "Emergency Room" && <EmergencyRoom />}
+          {activeTab === "Weekly Letter" && <WeeklyLetter />}
+
         </div>
+      </main>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {contracts.map(contract => (
-            <ContractCard
-              key={contract.id}
-              contract={contract}
-              onUpdate={refresh}
-            />
-          ))}
-        </div>
-      </div>
-    )}
-
-    {activeTab === "Dashboard" && <Dashboard />}
-
-    {activeTab === "Emergency Room" && <EmergencyRoom />}
-
-    {activeTab === "Weekly Letter" && (
-      <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "4px" }}>
-          Weekly Letter
-        </h1>
-        <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>Coming soon.</p>
-      </div>
-    )}
-
-  </div>
-</main>
       {showAdd && (
         <AddContract
           onClose={() => setShowAdd(false)}
@@ -338,6 +316,7 @@ function ContractCard({ contract, onUpdate }: {
   const [newDeadline, setNewDeadline] = useState("");
   const [callout, setCallout] = useState("");
   const [completing, setCompleting] = useState(false);
+  const [interrogating, setInterrogating] = useState(false);
 
   const deadline = new Date(contract.deadline);
   const now = new Date();
@@ -383,229 +362,221 @@ function ContractCard({ contract, onUpdate }: {
     onUpdate();
   }
 
-  const borderColor = isCompleted
-    ? "var(--border)"
-    : isOverdue
-    ? "var(--danger)"
-    : isUrgent
-    ? "var(--warning)"
-    : "var(--border)";
-
-  const accentColor = isOverdue
-    ? "var(--danger)"
-    : isUrgent
-    ? "var(--warning)"
-    : "transparent";
+  const borderColor = isCompleted ? "var(--border)" : isOverdue ? "var(--danger)" : isUrgent ? "var(--warning)" : "var(--border)";
+  const accentColor = isOverdue ? "var(--danger)" : isUrgent ? "var(--warning)" : "transparent";
 
   return (
-    <div style={{
-      background: "var(--surface)",
-      border: `0.5px solid ${borderColor}`,
-      borderRadius: "10px",
-      overflow: "hidden",
-      opacity: isCompleted ? 0.45 : 1,
-      transition: "opacity 0.3s"
-    }}>
-      {!isCompleted && (isOverdue || isUrgent) && (
-        <div style={{
-          height: "2px",
-          background: accentColor
-        }} />
-      )}
+    <>
+      <div style={{
+        background: "var(--surface)",
+        border: `0.5px solid ${borderColor}`,
+        borderRadius: "10px",
+        overflow: "hidden",
+        opacity: isCompleted ? 0.45 : 1,
+        transition: "opacity 0.3s"
+      }}>
+        {!isCompleted && (isOverdue || isUrgent) && (
+          <div style={{ height: "2px", background: accentColor }} />
+        )}
 
-      <div style={{ padding: "1.25rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-          <div style={{ flex: 1 }}>
-            <p style={{
-              fontSize: "15px",
-              fontWeight: "600",
-              color: "var(--text-primary)",
-              letterSpacing: "-0.01em",
-              marginBottom: "4px",
-              textDecoration: isCompleted ? "line-through" : "none"
-            }}>
-              {contract.title}
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-              <span style={{ fontSize: "12px", color: isOverdue ? "var(--danger)" : isUrgent ? "var(--warning)" : "var(--text-muted)" }}>
-                {isCompleted
-                  ? "Completed ✓"
-                  : isOverdue
-                  ? `Overdue by ${Math.abs(hoursLeft)}h`
-                  : isUrgent
-                  ? `⚠ ${hoursLeft}h left`
-                  : `Due ${deadline.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
-              </span>
-              {contract.rescheduleCount > 0 && (
-                <span style={{
-                  fontSize: "11px",
-                  padding: "1px 8px",
-                  borderRadius: "20px",
-                  background: "var(--danger-dim)",
-                  color: "var(--danger)",
-                  border: "0.5px solid rgba(248,81,73,0.2)"
-                }}>
-                  rescheduled {contract.rescheduleCount}×
+        <div style={{ padding: "1.25rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+            <div style={{ flex: 1 }}>
+              <p style={{
+                fontSize: "15px",
+                fontWeight: "600",
+                color: "var(--text-primary)",
+                letterSpacing: "-0.01em",
+                marginBottom: "4px",
+                textDecoration: isCompleted ? "line-through" : "none"
+              }}>
+                {contract.title}
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "12px", color: isOverdue ? "var(--danger)" : isUrgent ? "var(--warning)" : "var(--text-muted)" }}>
+                  {isCompleted ? "Completed ✓"
+                    : isOverdue ? `Overdue by ${Math.abs(hoursLeft)}h`
+                    : isUrgent ? `⚠ ${hoursLeft}h left`
+                    : `Due ${deadline.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
                 </span>
-              )}
+                {contract.rescheduleCount > 0 && (
+                  <span style={{
+                    fontSize: "11px",
+                    padding: "1px 8px",
+                    borderRadius: "20px",
+                    background: "var(--danger-dim)",
+                    color: "var(--danger)",
+                    border: "0.5px solid rgba(255,87,87,0.15)"
+                  }}>
+                    rescheduled {contract.rescheduleCount}×
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
 
-          <span style={{
-            fontSize: "10px",
-            fontWeight: "600",
-            padding: "3px 10px",
-            borderRadius: "20px",
-            letterSpacing: "0.05em",
-            background: contract.priority === "high"
-              ? "var(--danger-dim)"
-              : contract.priority === "medium"
-              ? "var(--warning-dim)"
-              : "var(--success-dim)",
-            color: contract.priority === "high"
-              ? "var(--danger)"
-              : contract.priority === "medium"
-              ? "var(--warning)"
-              : "var(--success)",
-            border: `0.5px solid ${contract.priority === "high"
-              ? "rgba(248,81,73,0.2)"
-              : contract.priority === "medium"
-              ? "rgba(210,153,34,0.2)"
-              : "rgba(63,185,80,0.2)"}`,
-            flexShrink: 0,
-            marginLeft: "12px"
-          }}>
-            {contract.priority.toUpperCase()}
-          </span>
-        </div>
-
-        {contract.aiNote && (
-          <div style={{
-            padding: "0.75rem",
-            background: "var(--surface-2)",
-            borderRadius: "6px",
-            borderLeft: "2px solid var(--accent-dim)",
-            marginBottom: callout ? "8px" : "0",
-            marginTop: "8px"
-          }}>
-            <p style={{
-              fontSize: "12px",
-              color: "var(--text-secondary)",
-              lineHeight: "1.7",
-              fontStyle: "italic"
+            <span style={{
+              fontSize: "10px",
+              fontWeight: "600",
+              padding: "3px 10px",
+              borderRadius: "20px",
+              letterSpacing: "0.05em",
+              background: contract.priority === "high" ? "var(--danger-dim)" : contract.priority === "medium" ? "var(--warning-dim)" : "var(--success-dim)",
+              color: contract.priority === "high" ? "var(--danger)" : contract.priority === "medium" ? "var(--warning)" : "var(--success)",
+              flexShrink: 0,
+              marginLeft: "12px"
             }}>
-              "{contract.aiNote}"
-            </p>
+              {contract.priority.toUpperCase()}
+            </span>
           </div>
-        )}
 
-        {callout && (
-          <div style={{
-            padding: "0.75rem",
-            background: "var(--danger-dim)",
-            borderRadius: "6px",
-            borderLeft: "2px solid var(--danger)",
-            marginTop: "8px"
-          }}>
-            <p style={{ fontSize: "12px", color: "var(--danger)", lineHeight: "1.7" }}>
-              {callout}
-            </p>
-          </div>
-        )}
+          {contract.aiNote && (
+            <div style={{
+              padding: "0.75rem",
+              background: "var(--surface-2)",
+              borderRadius: "6px",
+              borderLeft: "2px solid var(--accent-dim)",
+              marginTop: "8px"
+            }}>
+              <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.7", fontStyle: "italic" }}>
+                "{contract.aiNote}"
+              </p>
+            </div>
+          )}
 
-        {!isCompleted && (
-          <div style={{
-            display: "flex",
-            gap: "8px",
-            marginTop: "1rem",
-            paddingTop: "0.875rem",
-            borderTop: "0.5px solid var(--border)"
-          }}>
-            <button
-              onClick={handleComplete}
-              disabled={completing}
-              style={{
-                padding: "0.4rem 1rem",
-                background: "var(--success-dim)",
-                border: "0.5px solid rgba(63,185,80,0.3)",
-                color: "var(--success)",
-                borderRadius: "6px",
-                fontSize: "12px",
-                fontWeight: "500",
-                cursor: "pointer"
-              }}
-            >
-              {completing ? "saving..." : "✓ Complete"}
-            </button>
+          {callout && (
+            <div style={{
+              padding: "0.75rem",
+              background: "var(--danger-dim)",
+              borderRadius: "6px",
+              borderLeft: "2px solid var(--danger)",
+              marginTop: "8px"
+            }}>
+              <p style={{ fontSize: "12px", color: "var(--danger)", lineHeight: "1.7" }}>
+                {callout}
+              </p>
+            </div>
+          )}
 
-            {!rescheduling ? (
+          {!isCompleted && (
+            <div style={{
+              display: "flex",
+              gap: "8px",
+              marginTop: "1rem",
+              paddingTop: "0.875rem",
+              borderTop: "0.5px solid var(--border)",
+              flexWrap: "wrap"
+            }}>
               <button
-                onClick={() => setRescheduling(true)}
+                onClick={handleComplete}
+                disabled={completing}
                 style={{
                   padding: "0.4rem 1rem",
-                  background: "transparent",
-                  border: "0.5px solid var(--border-bright)",
-                  color: "var(--text-muted)",
+                  background: "var(--success-dim)",
+                  border: "0.5px solid rgba(74,222,128,0.3)",
+                  color: "var(--success)",
                   borderRadius: "6px",
                   fontSize: "12px",
+                  fontWeight: "500",
                   cursor: "pointer"
                 }}
               >
-                Reschedule
+                {completing ? "saving..." : "✓ Complete"}
               </button>
-            ) : (
-              <div style={{ display: "flex", gap: "6px", alignItems: "center", flex: 1 }}>
-                <input
-                  type="datetime-local"
-                  value={newDeadline}
-                  onChange={e => setNewDeadline(e.target.value)}
-                  style={{
-                    flex: 1,
-                    background: "var(--surface-2)",
-                    border: "0.5px solid var(--border-bright)",
-                    borderRadius: "6px",
-                    padding: "0.375rem 0.5rem",
-                    fontSize: "12px",
-                    color: "var(--text-primary)",
-                    outline: "none",
-                    fontFamily: "inherit"
-                  }}
-                />
+
+              {(isOverdue || isUrgent) && (
                 <button
-                  onClick={handleReschedule}
-                  disabled={!newDeadline}
+                  onClick={() => setInterrogating(true)}
                   style={{
-                    padding: "0.375rem 0.75rem",
-                    background: "var(--danger)",
-                    border: "none",
-                    color: "white",
+                    padding: "0.4rem 1rem",
+                    background: "var(--danger-dim)",
+                    border: "0.5px solid rgba(255,87,87,0.3)",
+                    color: "var(--danger)",
                     borderRadius: "6px",
                     fontSize: "12px",
                     fontWeight: "500",
                     cursor: "pointer"
                   }}
                 >
-                  Confirm
+                  ⚡ Interrogate
                 </button>
+              )}
+
+              {!rescheduling ? (
                 <button
-                  onClick={() => setRescheduling(false)}
+                  onClick={() => setRescheduling(true)}
                   style={{
-                    padding: "0.375rem 0.75rem",
+                    padding: "0.4rem 1rem",
                     background: "transparent",
-                    border: "0.5px solid var(--border)",
+                    border: "0.5px solid var(--border-bright)",
                     color: "var(--text-muted)",
                     borderRadius: "6px",
                     fontSize: "12px",
                     cursor: "pointer"
                   }}
                 >
-                  Cancel
+                  Reschedule
                 </button>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                <div style={{ display: "flex", gap: "6px", alignItems: "center", flex: 1 }}>
+                  <input
+                    type="datetime-local"
+                    value={newDeadline}
+                    onChange={e => setNewDeadline(e.target.value)}
+                    style={{
+                      flex: 1,
+                      background: "var(--surface-2)",
+                      border: "0.5px solid var(--border-bright)",
+                      borderRadius: "6px",
+                      padding: "0.375rem 0.5rem",
+                      fontSize: "12px",
+                      color: "var(--text-primary)",
+                      outline: "none",
+                      fontFamily: "inherit"
+                    }}
+                  />
+                  <button
+                    onClick={handleReschedule}
+                    disabled={!newDeadline}
+                    style={{
+                      padding: "0.375rem 0.75rem",
+                      background: "var(--danger)",
+                      border: "none",
+                      color: "white",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      fontWeight: "500",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={() => setRescheduling(false)}
+                    style={{
+                      padding: "0.375rem 0.75rem",
+                      background: "transparent",
+                      border: "0.5px solid var(--border)",
+                      color: "var(--text-muted)",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {interrogating && (
+        <InterrogationMode
+          contract={contract}
+          onClose={() => setInterrogating(false)}
+        />
+      )}
+    </>
   );
 }

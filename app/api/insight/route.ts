@@ -1,30 +1,28 @@
-import { askGemini } from "@/lib/gemini";
+import { askGeminiWithProfile } from "@/lib/gemini";
+import { getProfile } from "@/lib/storage";
 
 export async function POST(req: Request) {
   const { completionRate, totalContracts, completed, overdue, totalReschedules, mostAvoided, axisScore } = await req.json();
+  const profile = getProfile();
 
   const prompt = `
     You are an honest accountability analyst.
-    Here are a user's productivity stats:
-    
+    User stats:
     - AXIS Score: ${axisScore}/100
-    - Total contracts made: ${totalContracts}
-    - Completed: ${completed}
-    - Completion rate: ${completionRate}%
-    - Currently overdue: ${overdue}
-    - Total times rescheduled across all tasks: ${totalReschedules}
-    - Most avoided task: "${mostAvoided}"
+    - Total contracts: ${totalContracts}
+    - Completed: ${completed} (${completionRate}%)
+    - Overdue: ${overdue}
+    - Total reschedules: ${totalReschedules}
+    - Most avoided: "${mostAvoided}"
     
-    Write a 2-3 sentence honest pattern analysis.
-    Identify what their behavior actually reveals about them.
-    Don't be motivational. Be diagnostic and specific.
-    Address them as "you".
+    Write 2-3 sentences. Identify what their behavior actually reveals.
+    Be diagnostic, not motivational. Address them as "you".
   `;
 
   try {
-    const insight = await askGemini(prompt);
+    const insight = await askGeminiWithProfile(prompt, profile);
     return Response.json({ insight });
   } catch {
-    return Response.json({ insight: "Add more contracts and complete them to see your patterns." });
+    return Response.json({ insight: "Add more contracts to see your patterns." });
   }
 }
